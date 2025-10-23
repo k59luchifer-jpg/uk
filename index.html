@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Modern WhatsApp QR Code Generator</title>
+
+  <!-- Bootstrap 5 CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+  <!-- Custom Styles -->
+  <style>
+    :root {
+      --primary-color: #0d8050;
+      --primary-hover: #0b6942;
+      --secondary-color: #198754;
+      --secondary-hover: #157347;
+      --background-light: #f8f9fa;
+      --background-dark: #121212;
+      --card-bg-light: #ffffff;
+      --card-bg-dark: #1e1e1e;
+      --text-light: #212529;
+      --text-dark: #e0e0e0;
+      --border-light: #dee2e6;
+      --border-dark: #333;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: var(--background-light);
+      color: var(--text-light);
+      transition: background-color 0.3s, color 0.3s;
+    }
+    
+    body.dark-mode {
+      background-color: var(--background-dark);
+      color: var(--text-dark);
+    }
+
+    .main-header h1 {
+      color: var(--primary-color);
+      font-weight: 700;
+      animation: fadeInDown 1s ease-out;
+    }
+    
+    .main-header .lead {
+      color: #6c757d;
+      animation: fadeInUp 1s ease-out;
+    }
+    
+    body.dark-mode .main-header .lead {
+      color: #aaa;
+    }
+
+    .card {
+      border: 1px solid var(--border-light);
+      border-radius: 0.75rem;
+      background-color: var(--card-bg-light);
+      transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out, background-color 0.3s, border-color 0.3s;
+      animation: zoomIn 0.5s ease-out;
+    }
+    
+    body.dark-mode .card {
+      background-color: var(--card-bg-dark);
+      border-color: var(--border-dark);
+    }
+
+    .card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 12px 28px rgba(0,0,0,0.15) !important;
+    }
+
+    .card-title {
+      color: var(--primary-color);
+      font-weight: 600;
+    }
+    
+    .btn {
+        border-radius: 0.5rem;
+        transition: all 0.3s ease;
+        font-weight: 500;
+    }
+
+    .btn-generate {
+        background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+        color: white;
+        border: none;
+    }
+    .btn-generate:hover {
+        transform: scale(1.05);
+        box-shadow: 0 4px 15px rgba(13, 128, 80, 0.4);
+        color: white;
+    }
+    
+    .btn-populate {
+        background-color: var(--secondary-color);
+        color: white;
+    }
+    .btn-populate:hover {
+        background-color: var(--secondary-hover);
+        transform: translateY(-2px);
+    }
+    
+    .qr-output {
+      margin-top: 1rem;
+      min-height: 220px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    
+    .qr-output .spinner-border {
+      display: none;
+      position: absolute;
+    }
+    
+    .greeting-label {
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+        color: #495057;
+    }
+    
+    body.dark-mode .greeting-label {
+        color: #ccc;
+    }
+
+    .form-control {
+        border-radius: 0.5rem;
+        background-color: var(--background-light);
+        border-color: var(--border-light);
+        color: var(--text-light);
+    }
+    
+    body.dark-mode .form-control {
+        background-color: #2c2c2c;
+        border-color: var(--border-dark);
+        color: var(--text-dark);
+    }
+    
+    body.dark-mode .form-control::placeholder {
+        color: #888;
+    }
+
+    footer {
+        font-size: 0.9rem;
+        color: #adb5bd;
+    }
+
+    /* Dark Mode Toggle */
+    .theme-switch-wrapper {
+        display: flex;
+        align-items: center;
+        position: fixed;
+        top: 20px;
+        right: 20px;
+    }
+    .theme-switch {
+        display: inline-block;
+        height: 34px;
+        position: relative;
+        width: 60px;
+    }
+    .theme-switch input {
+        display:none;
+    }
+    .slider {
+        background-color: #ccc;
+        bottom: 0;
+        cursor: pointer;
+        left: 0;
+        position: absolute;
+        right: 0;
+        top: 0;
+        transition: .4s;
+    }
+    .slider:before {
+        background-color: #fff;
+        bottom: 4px;
+        content: "";
+        height: 26px;
+        left: 4px;
+        position: absolute;
+        transition: .4s;
+        width: 26px;
+    }
+    input:checked + .slider {
+        background-color: var(--primary-color);
+    }
+    input:checked + .slider:before {
+        transform: translateX(26px);
+    }
+    .slider.round {
+        border-radius: 34px;
+    }
+    .slider.round:before {
+        border-radius: 50%;
+    }
+
+    /* Animations */
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes zoomIn {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="theme-switch-wrapper">
+    <label class="theme-switch" for="checkbox">
+      <input type="checkbox" id="checkbox" />
+      <div class="slider round"></div>
+    </label>
+  </div>
+  
+  <div class="container my-5">
+    <!-- Header -->
+    <header class="text-center mb-5 main-header">
+      <h1>LAICAI K Group 2.0</h1>
+      <p class="lead">Generate Multiple WhatsApp QR Codes with Ease</p>
+    </header>
+
+    <!-- QR Generators Section -->
+    <div class="row g-4" id="qr-grid">
+        <!-- QR Generator cards will be inserted here by JavaScript -->
+    </div>
+
+    <!-- Phone Number Notes Section -->
+    <section class="my-5" style="animation: fadeInUp 1s 0.2s ease-out backwards;">
+        <div class="text-center mb-4 main-header">
+            <h1>Phone Number Notes</h1>
+        </div>
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <textarea class="form-control" id="phone-notes" rows="8" placeholder="List phone numbers here, one per line..."></textarea>
+                 <div class="text-center mt-3">
+                    <button class="btn btn-populate" onclick="populateNumbers()">Add to Generators</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- International Greetings Section -->
+    <section class="my-5" style="animation: fadeInUp 1s 0.4s ease-out backwards;">
+         <div class="text-center mb-4 main-header">
+            <h1>International Greetings</h1>
+        </div>
+        <div class="row g-3">
+            <div class="col-lg-2 col-md-4 col-sm-6">
+                 <label class="greeting-label">🇬🇧 UK (+44) / 1</label>
+                <textarea id="greeting-1" class="form-control" rows="5" placeholder="Message for numbers starting with +441..."></textarea>
+            </div>
+            <div class="col-lg-2 col-md-4 col-sm-6">
+                <label class="greeting-label">Greeting / 2</label>
+                <textarea id="greeting-2" class="form-control" rows="5" placeholder="Message for numbers starting with +442..."></textarea>
+            </div>
+            <div class="col-lg-2 col-md-4 col-sm-6">
+                <label class="greeting-label">Greeting / 3</label>
+                <textarea id="greeting-3" class="form-control" rows="5" placeholder="Message for numbers starting with +443..."></textarea>
+            </div>
+            <div class="col-lg-2 col-md-4 col-sm-6">
+                <label class="greeting-label">Greeting / 4</label>
+                <textarea id="greeting-4" class="form-control" rows="5" placeholder="Message for numbers starting with +444..."></textarea>
+            </div>
+            <div class="col-lg-2 col-md-4 col-sm-6">
+                <label class="greeting-label">Greeting / 5</label>
+                <textarea id="greeting-5" class="form-control" rows="5" placeholder="Message for numbers starting with +445..."></textarea>
+            </div>
+            <div class="col-lg-2 col-md-4 col-sm-6">
+                <label class="greeting-label">Greeting / 6</label>
+                <textarea id="greeting-6" class="form-control" rows="5" placeholder="Message for numbers starting with +446..."></textarea>
+            </div>
+             <div class="col-lg-2 col-md-4 col-sm-6">
+                <label class="greeting-label">Greeting / 7</label>
+                <textarea id="greeting-7" class="form-control" rows="5" placeholder="Message for numbers starting with +447..."></textarea>
+            </div>
+            <div class="col-lg-2 col-md-4 col-sm-6">
+                <label class="greeting-label">Greeting / 8</label>
+                <textarea id="greeting-8" class="form-control" rows="5" placeholder="Message for numbers starting with +448..."></textarea>
+            </div>
+            <div class="col-lg-2 col-md-4 col-sm-6">
+                <label class="greeting-label">Greeting / 9</label>
+                <textarea id="greeting-9" class="form-control" rows="5" placeholder="Message for numbers starting with +449..."></textarea>
+            </div>
+             <div class="col-lg-2 col-md-4 col-sm-6">
+                <label class="greeting-label">Greeting / 0</label>
+                <textarea id="greeting-0" class="form-control" rows="5" placeholder="Message for numbers starting with +440..."></textarea>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="text-center mt-5">
+        <p>"If you need any help ~ contact with IT"</p>
+
+        <p><b>Develop By Luchifer</b></p>
+    </footer>
+  </div>
+
+  <!-- QRCode.js Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+  <script>
+    const qrCodes = {};
+    const TOTAL_CARDS = 16;
+
+    function createQRGeneratorCards() {
+        const grid = document.getElementById('qr-grid');
+        let cardsHTML = '';
+        for (let i = 1; i <= TOTAL_CARDS; i++) {
+            cardsHTML += `
+                <div class="col-xl-3 col-lg-4 col-md-6">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">QR Code ${i}</h5>
+                            <input type="tel" class="form-control mb-2" id="phone${i}" placeholder="Enter phone number" oninput="autoFillMessage(${i})">
+                            <textarea class="form-control mb-3" id="message${i}" rows="3" placeholder="Enter message..."></textarea>
+                            <div class="controls mt-auto">
+                                <button class="btn btn-generate btn-sm" onclick="generateQR(${i})">Generate</button>
+                                <button class="btn btn-secondary btn-sm" onclick="downloadQR(${i})">Download</button>
+                                <button class="btn btn-outline-secondary btn-sm" onclick="copyLink(${i})">Copy Link</button>
+                            </div>
+                            <div class="qr-output" id="qrcode${i}">
+                                <div class="spinner-border text-success" role="status">
+                                  <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        grid.innerHTML = cardsHTML;
+    }
+    
+    function autoFillMessage(index) {
+        const phoneInput = document.getElementById(`phone${index}`);
+        const messageTextarea = document.getElementById(`message${index}`);
+        const phoneNumber = phoneInput.value.trim().replace(/[^0-9]/g, '');
+
+        let messageSet = false;
+
+        // Check if the number starts with UK code '44' and has at least one more digit.
+        if (phoneNumber.startsWith('44') && phoneNumber.length > 2) {
+            const determiningDigit = phoneNumber.charAt(2); // Get the digit right after '44'.
+
+            // Check if the digit is valid (0-9).
+            if (determiningDigit >= '0' && determiningDigit <= '9') {
+                const greetingId = `greeting-${determiningDigit}`; // Construct the ID, e.g., 'greeting-1', 'greeting-0'.
+                const greetingElement = document.getElementById(greetingId);
+
+                if (greetingElement) {
+                    const greetingMessage = greetingElement.value;
+                    if (greetingMessage) {
+                        messageTextarea.value = greetingMessage;
+                        messageSet = true;
+                    }
+                }
+            }
+        }
+
+        // If no specific message was set based on the rules, clear the textarea.
+        if (!messageSet) {
+             messageTextarea.value = '';
+        }
+    }
+
+    function populateNumbers() {
+        const notes = document.getElementById('phone-notes').value.trim();
+        if (!notes) {
+            alert('Please enter phone numbers in the notes area first.');
+            return;
+        }
+        
+        const numbers = notes.split(/\r?\n/).filter(line => line.trim() !== '');
+        
+        for (let i = 0; i < TOTAL_CARDS; i++) {
+            const phoneInput = document.getElementById(`phone${i + 1}`);
+            if (phoneInput) {
+                const numberToSet = numbers[i] ? numbers[i].trim() : '';
+                phoneInput.value = numberToSet;
+                
+                if(numberToSet) {
+                    autoFillMessage(i + 1);
+                } else {
+                    document.getElementById(`message${i + 1}`).value = '';
+                }
+            }
+        }
+        
+        if (numbers.length > 0) {
+            alert(`${Math.min(numbers.length, TOTAL_CARDS)} phone numbers have been populated.`);
+        }
+    }
+
+    function generateQR(index) {
+      const phone = document.getElementById(`phone${index}`).value.trim().replace(/[^0-9]/g, '');
+      const message = document.getElementById(`message${index}`).value.trim();
+      const qrContainer = document.getElementById(`qrcode${index}`);
+      const spinner = qrContainer.querySelector('.spinner-border');
+
+      if (!phone) {
+        alert(`Please provide a phone number for QR Code ${index}.`);
+        return;
+      }
+      
+      qrContainer.innerHTML = ''; // Clear previous QR and spinner
+      qrContainer.appendChild(spinner);
+      spinner.style.display = 'block';
+
+      // Use a timeout to simulate generation and show the spinner
+      setTimeout(() => {
+        const url = `https://wa.me/${phone}${message ? '?text=' + encodeURIComponent(message) : ''}`;
+        
+        spinner.style.display = 'none';
+
+        qrCodes[index] = new QRCode(qrContainer, {
+          text: url,
+          width: 200,
+          height: 200,
+          colorDark: document.body.classList.contains('dark-mode') ? "#e0e0e0" : "#000000",
+          colorLight: document.body.classList.contains('dark-mode') ? "#1e1e1e" : "#ffffff",
+          correctLevel: QRCode.CorrectLevel.H
+        });
+      }, 500);
+    }
+    
+    function copyLink(index) {
+        const phone = document.getElementById(`phone${index}`).value.trim().replace(/[^0-9]/g, '');
+        const message = document.getElementById(`message${index}`).value.trim();
+
+        if (!phone) {
+            alert(`Please provide a phone number for QR Code ${index} to generate a link.`);
+            return;
+        }
+
+        const url = `https://wa.me/${phone}${message ? '?text=' + encodeURIComponent(message) : ''}`;
+
+        navigator.clipboard.writeText(url).then(() => {
+            alert(`Link for QR Code ${index} copied to clipboard!`);
+        }, (err) => {
+            alert(`Failed to copy link for QR Code ${index}.`);
+            console.error('Clipboard copy failed: ', err);
+        });
+    }
+
+    function downloadQR(index) {
+      const qrContainer = document.getElementById(`qrcode${index}`);
+      const canvas = qrContainer.querySelector('canvas');
+      const phoneValue = document.getElementById(`phone${index}`).value.trim() || `qrcode_${index}`;
+      
+      if (!canvas) {
+        alert(`Please generate QR Code ${index} first.`);
+        return;
+      }
+
+      const link = document.createElement('a');
+      link.href = canvas.toDataURL('image/png');
+      link.download = `whatsapp_qr_${phoneValue.replace(/[^a-zA-Z0-9]/g, '')}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+    
+    // Dark Mode Toggle Logic
+    const toggle = document.getElementById('checkbox');
+    toggle.addEventListener('change', () => {
+        document.body.classList.toggle('dark-mode');
+    });
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', createQRGeneratorCards);
+  </script>
+</body>
+</html>
